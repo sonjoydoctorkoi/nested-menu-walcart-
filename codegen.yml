@@ -1,0 +1,14 @@
+overwrite: true
+schema: "https://devapiv2.walcart.com/graphql"
+documents: './src/components/**/*.ts'
+generates:
+  src/generated/graphql.tsx:
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+      - "typescript-react-apollo"
+  ./graphql.schema.json:
+    plugins:
+      - "introspection"
+    config:
+      withHooks: true 
