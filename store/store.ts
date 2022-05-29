@@ -3,10 +3,10 @@ import {
   configureStore,
   ThunkAction,
 } from '@reduxjs/toolkit';
-import { reducer  } from './reducer'
+import  reducer   from './reducer'
 export const store = configureStore({
   reducer: {
-    one: reducer    
+    category: reducer    
 // This is where we add reducers.
 // Since we don't have any yet, leave this empty
   },

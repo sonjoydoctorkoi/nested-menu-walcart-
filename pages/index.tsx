@@ -1,28 +1,46 @@
-import { Collapse, List, ListItemButton, ListItemIcon, ListItemText, ListSubheader } from '@mui/material'
+import { Box, CircularProgress, Collapse, List, ListItemButton, ListItemIcon, ListItemText, ListSubheader } from '@mui/material'
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styles from '../styles/Home.module.css'
-import InboxIcon from '@mui/icons-material/MoveToInbox';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import { ExpandLess, ExpandMore, RsvpTwoTone, StarBorder } from '@mui/icons-material'
 import {useCategoryListQuery} from '../src/generated/graphql'
+import {setCategoryList} from '../store/reducer'
+import { Dispatch } from "redux";
+import { useAppDispatch } from '../store/hooks'
+import { RootState } from '../store/store'
+import { useSelector } from 'react-redux'
 
+
+const actionDispatch = (dispatch: Dispatch) => ({
+  setCategoryList: (page: any) => dispatch(setCategoryList(page)),
+});
 const Home: NextPage = () => {
-  const [open, setOpen] = React.useState(false);
   const [row, setRow] = useState<number>(0);
+  const { setCategoryList } = actionDispatch(useAppDispatch());
+  const getData = useSelector((state: RootState) => state.category.data)
 
-  console.log(row);
   
   const { data, error, loading } = useCategoryListQuery();
+
+  const fetchData =()=>{
+    setCategoryList(data?.getCategories?.result)
+  }
+
+  useEffect(()=>{
+    fetchData()
+  },[data])
+
   if (loading) {
-    return <div>Loading...</div>;
+    return <Box sx={{ display: 'flex' }}>
+    <CircularProgress />
+  </Box>;
   }
 
   if (error || !data) {
     return <div>ERROR</div>;
   }
-  const list:any = data.getCategories
+  const list:any = getData.categories
   
   return (
     <div className={styles.container}>
@@ -55,7 +73,7 @@ const Home: NextPage = () => {
             </li>
           </ul>
         </li> */}
-        {list?.result.categories.filter((res:any)=> res.isActive === true ).map((res:any,key:number)=>{
+        {list?.filter((res:any)=> res.isActive === true ).map((res:any,key:number)=>{
           return (<li className={`${res.parents.length> 0 && styles.dropdownSubmenu} ${row === key && styles.active}`} key={key} onClick={()=>setRow(key)}>{res.name}
            {res.parents.length> 0 && (<><ArrowForwardIosIcon sx={{ float: 'right' }} />
            {row === key?<ul key={key} className={`${styles.dropdownmenu} ${styles.nestedMenu} `}>
