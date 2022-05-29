@@ -1,47 +1,72 @@
-import { Box, CircularProgress, Collapse, List, ListItemButton, ListItemIcon, ListItemText, ListSubheader } from '@mui/material'
-import type { NextPage } from 'next'
-import Head from 'next/head'
-import React, { useEffect, useState } from 'react'
-import styles from '../styles/Home.module.css'
+import {
+  Box,
+  CircularProgress,
+  Collapse,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  ListSubheader,
+} from '@mui/material';
+import type { NextPage } from 'next';
+import Head from 'next/head';
+import React, { useEffect, useState } from 'react';
+import styles from '../styles/Home.module.css';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import {useCategoryListQuery} from '../src/generated/graphql'
-import {setCategoryList} from '../store/reducer'
-import { Dispatch } from "redux";
-import { useAppDispatch } from '../store/hooks'
-import { RootState } from '../store/store'
-import { useSelector } from 'react-redux'
-
+import { useCategoryListQuery } from '../src/generated/graphql';
+import { setCategoryList } from '../store/reducer';
+import { Dispatch } from 'redux';
+import { useAppDispatch } from '../store/hooks';
+import { RootState } from '../store/store';
+import { useSelector } from 'react-redux';
 
 const actionDispatch = (dispatch: Dispatch) => ({
   setCategoryList: (page: any) => dispatch(setCategoryList(page)),
 });
+type ParentCategory = {
+  __typename: string;
+  name: string;
+  uid: string;
+};
+interface Category {
+  createdAt: string;
+  inActiveNote: null;
+  isActive: boolean;
+  name: string;
+  parent: ParentCategory;
+  parents: ParentCategory[];
+  uid: String;
+  updatedAt: String;
+  __typename: String;
+}
 const Home: NextPage = () => {
   const [row, setRow] = useState<number>(0);
   const { setCategoryList } = actionDispatch(useAppDispatch());
-  const getData = useSelector((state: RootState) => state.category.data)
+  const getData = useSelector((state: RootState) => state.category.data);
 
-  
   const { data, error, loading } = useCategoryListQuery();
 
-  const fetchData =()=>{
-    setCategoryList(data?.getCategories?.result)
-  }
+  const fetchData = () => {
+    setCategoryList(data?.getCategories?.result);
+  };
 
-  useEffect(()=>{
-    fetchData()
-  },[data])
+  useEffect(() => {
+    fetchData();
+  }, [data]);
 
   if (loading) {
-    return <Box sx={{ display: 'flex' }}>
-    <CircularProgress />
-  </Box>;
+    return (
+      <Box sx={{ display: 'flex' }}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
   if (error || !data) {
     return <div>ERROR</div>;
   }
-  const list:any = getData.categories
-  
+  const list: Category[]  = getData?.categories;
+
   return (
     <div className={styles.container}>
       <Head>
@@ -73,18 +98,38 @@ const Home: NextPage = () => {
             </li>
           </ul>
         </li> */}
-        {list?.filter((res:any)=> res.isActive === true ).map((res:any,key:number)=>{
-          return (<li className={`${res.parents.length> 0 && styles.dropdownSubmenu} ${row === key && styles.active}`} key={key} onClick={()=>setRow(key)}>{res.name}
-           {res.parents.length> 0 && (<><ArrowForwardIosIcon sx={{ float: 'right' }} />
-           {row === key?<ul key={key} className={`${styles.dropdownmenu} ${styles.nestedMenu} `}>
-             {res.parents.map((res:any,key:number)=>{
-                return (
-                <li key={key}>{res.name}</li>)
-             }) }
-             </ul>:<></>}</>) }
-            
-          </li>)
-        })}
+        {list
+          ?.filter((res: Category) => res.isActive === true)
+          .map((res: Category, key: number) => {
+            return (
+              <li
+                className={`${
+                  res.parents.length > 0 && styles.dropdownSubmenu
+                } ${row === key && styles.active}`}
+                key={key}
+                onClick={() => setRow(key)}
+              >
+                {res.name}
+                {res.parents.length > 0 && (
+                  <>
+                    <ArrowForwardIosIcon sx={{ float: 'right' }} />
+                    {row === key ? (
+                      <ul
+                        key={key}
+                        className={`${styles.dropdownmenu} ${styles.nestedMenu} `}
+                      >
+                        {res.parents.map((res: ParentCategory, key: number) => {
+                          return <li key={key}>{res.name}</li>;
+                        })}
+                      </ul>
+                    ) : (
+                      <></>
+                    )}
+                  </>
+                )}
+              </li>
+            );
+          })}
       </ul>
 
       {/* <List
@@ -166,7 +211,7 @@ const Home: NextPage = () => {
       </Collapse>
     </List> */}
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
